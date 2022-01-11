@@ -31,6 +31,11 @@
 	> systemctl start httpd
 	> echo "<h1>Test Web Server</h1>" > /var/www/html/index.html
 	> curl localhost -> 웹페이지 확인
+	/*
+	   ************ ubuntu ****************
+	   > sudo apt-get update
+	   > sudo apt-get install apache2
+   	*/	   
 
   4-2.인스턴스 삭제
   	> 서비스 -> EC2 -> 인스턴스 -> 인스턴스 선택 -> 인스턴스 상태 -> 인스턴스 종료
