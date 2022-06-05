@@ -1,6 +1,73 @@
 팀블로그 -> http://blog.cloudneta.net
 팀 지원 이메일 -> support@cloudneta.net
 
+
+<0> ubuntu (client 계정으로 & 홈디렉토리)
+ > sudo apt update
+ > sudo apt install apache2 php
+ > sudo apt install mysql-server
+ > sudo apt install mysql-server
+ > sudo apt install mysql-client
+ > sudo apt-get php-mysql
+ > sudo service apache2 restart
+ > mysql root 패스워드 설정
+ > vi /var/www/html/loadtest.php
+
+<?php
+$time = microtime(true);
+password_hash('Hello',CRYPT_BLOWFISH,array("cost"=>empty($_GET['cost']) ? 14 : (int)$_GET['cost']));
+echo $_SERVER['SERVER_ADDR'].' : '.(microtime(true) - $time);
+?>
+
+ > vi /var/www/html/mysqltest.php
+
+	<?php
+$conn = mysqli_connect('localhost', 'root', '패스워드', 'mysql');
+$result = mysqli_query($conn, 'SELECT * FROM user limit 1');
+$row = mysqli_fetch_assoc($result);
+var_dump($row['User']);
+?> 
+
+ 1. php sdk 설치
+
+  > curl -sS https://getcomposer.org/installer | php
+  > sudo mv composer.phar /usr/local/bin/composer
+  > sudo apt install php-xml
+  > sudo apt install zip unzip php-zip
+  > composer require aws/aws-sdk-php
+  > AWS 콘솔에서 AMI 만들기(adimn access 권한)
+  > mkdir .aws
+  > vi credentials
+    [default]
+    aws_access_key_id = IAM id
+    aws_secret_access_key = IAM password
+
+  > vi ec2Test.php
+
+<?php
+require './vendor/autoload.php';
+$ar = array('region'=>'ap-northeast-2','version'=>'2016-11-15');
+$ec2 = new Aws\Ec2\Ec2Client($ar);
+$inst = $ec2->describeInstances([]);
+print($inst['Reservations'][0]['Instances'][0]['NetworkInterfaces'][0]['Association']['PublicIp']."\n");
+?>
+
+  > s3 버킷 만들기(권한 : 모든퍼블릭액세스차단 비활성화 &  객체소유권 ACL 활성화)
+  > vi s3UploadTest.php
+
+<?php
+require 'vendor/autoload.php';
+$ar = Array('region'=>'ap-northeast-2', 'version'=>'2006-03-01');
+$s3 = new Aws\S3\S3Client($ar);
+$s3->putObject(Array(
+    'ACL'=>'public-read', <- ACL 활성화 되어야 사용가능
+    'SourceFile'=>'ttt.txt',
+    'Bucket'=>'ext7fs-bucket',
+    'Key'=>'ttt.txt'
+));
+?>
+
+
 <1> AWS Infra
 
   1.AWS 소개
@@ -27,15 +94,11 @@
 	> chmod 400 webServer.pem
 	> sudo ssh -i webServer.pem ec2-user@3.35.216.71
 	> sudo su -
+	//> yum update httpd
 	> yum install httpd -y
 	> systemctl start httpd
 	> echo "<h1>Test Web Server</h1>" > /var/www/html/index.html
 	> curl localhost -> 웹페이지 확인
-	/*
-	   ************ ubuntu ****************
-	   > sudo apt-get update
-	   > sudo apt-get install apache2
-   	*/	   
 
   4-2.인스턴스 삭제
   	> 서비스 -> EC2 -> 인스턴스 -> 인스턴스 선택 -> 인스턴스 상태 -> 인스턴스 종료
